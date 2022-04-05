@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated TH -->
+      <package
+            uri="http:///TH.ecore"
+            class="TH.THPackage"
+            genModel="TH.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated TH -->
+      <package
+            uri="http:///TH/Package40.ecore"
+            class="TH.Package40.Package40Package"
+            genModel="TH.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <!-- @generated TH -->
+      <package
+            uri="http://www.eclipse.org/uml2/5.0.0/Types"
+            class="org.eclipse.uml2.types.TypesPackage"
+            genModel="TH.genmodel"/>
+   </extension>
+
+</plugin>

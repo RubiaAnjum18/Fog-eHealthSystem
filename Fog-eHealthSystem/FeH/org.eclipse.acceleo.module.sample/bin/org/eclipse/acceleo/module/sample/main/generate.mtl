@@ -1,0 +1,917 @@
+[comment encoding = UTF-8 /]
+[module generate('http://www.eclipse.org/uml2/5.0.0/UML', 
+'http://www.eclipse.org/emf/2002/Ecore', 
+'http://www.eclipse.org/uml2/5.0.0/Types',
+'http://www.eclipse.org/uml2/5.0.0/UML/Profile/Standard')]
+
+[template public generateClass(aModel : Model)]
+[comment @main /]
+
+[for (aClass : Class | aModel.ownedElement->filter(Class))]
+	
+[if (aClass.name = 'Cloudsim')]
+[InitializeCloudsimEntities(aClass)/]
+
+[elseif (aClass.name = 'ModuleMapping')]
+[InitializeModuleMapping(aClass)/]
+
+[elseif (aClass.name = 'TimeKeeper')]
+[createTimeKeeper(aClass)/]	
+
+[elseif (aClass.name = 'eHealthSystem')]
+[generateHealthSystemVariables(aClass)/]
+
+[elseif aClass.name = 'Log']
+[generatelog(aClass)/]
+
+[elseif aClass.name = 'Controller']
+[controller(aClass)/]
+
+[elseif aClass.name = 'Application']
+[createApplicationID(aClass)/]
+
+[elseif aClass.name = 'FogDevice']
+[createFogDevices(aClass)/]
+
+[elseif aClass.name = 'ProcessingElements']
+[createProcessingElement(aClass)/]
+
+[elseif aClass.name = 'Host']
+[createHost(aClass)/]
+
+[elseif (aClass.name = 'ProcessingElements')]
+[createProcessingElement(aClass)/]
+
+[elseif aClass.name = 'DeviceCharacteristics']
+[InitializeDeviceCharacteristics(aClass)/]
+
+[elseif aClass.name = 'AppModule']
+[createAppModule(aClass)/]
+[createTupleMapping(aClass)/]
+
+[elseif aClass.name = 'AppLoop']
+[createAppLoop(aClass)/]
+
+[elseif aClass.name = 'AppEdge']
+[createAppEdge(aClass)/]
+		
+	[/if]
+			[for (p: Property | aClass.getAllAttributes()) separator('\n')]
+				[if ( p.isStatic)]
+		 			static List<[p.type.name/]> [p.name.toLowerCase()/] = new ArrayList<[p.type.name/]>();
+				[/if]
+			[/for]
+ 			
+		[for (stereo: Stereotype | aClass.getAppliedStereotypes())]
+			[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator('\n')] 
+   			   [att.visibility/] [att.type.name/] [att.name/]  =  [if att.type.name = 'String']"[aClass.getValue(stereo, att.name)/]";[else][aClass.getValue(stereo, att.name)/];[/if]
+			[/for]
+		[/for]
+		[for (o: Operation | aClass.ownedOperation) separator('\n')] 
+			[if (o.name = 'main')]
+	 			[o.visibility/] static void [o.name/]([for (b : Parameter | o.ownedParameter ) separator (',')] [b.type.name/]['[]'/] [b.name/] [/for]){
+       				Log.printLine("Starting Simulation...");
+      				try{
+ 					Log.disable();
+				[for (cls : Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Device')))]      
+					[for (stereo : Stereotype | aClass.getAppliedStereotypes())]
+ 						[if (stereo.name = 'Device')]
+							[for (p: Property | aClass.getAllAttributes()->select(temp: Property | not (temp.name = 'mips'))) separator('\n')]
+     							[p.type.name/] [p.name/] = [if (p.type.name = 'String')]"[aClass.getValue(stereo, p.name)/]";
+         				[else][aClass.getValue(stereo, p.name)/]; [/if] [/for] [/if] [/for]
+		[/for]
+		[for (cls : Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('CloudSim')))]
+			[for (stereo : Stereotype | cls.getAppliedStereotypes())]
+ 				[if (stereo.name = 'CloudSim')]
+					[for (att : Property | stereo.ownedAttribute->select(p:Property | not p.name.startsWith('base_'))) separator (',')]
+ 						[att.type.name/] [att.name/] = [if (att.type.name = 'String')]"[aClass.getValue(stereo, att.name)/]";
+         		[else][aClass.getValue(stereo, att.name)/];
+				[/if] [/for]
+			[/if][/for]
+		[/for]
+
+		} catch (Exception e) {
+		e.printStackTrace();
+		Log.printLine("Unwanted errors happen");
+		}
+	}
+	[elseif (o.name = 'createFogDevices')]
+  		[o.visibility/] static FogDevice [o.name/]([for (b : Parameter | o.ownedParameter)separator(',')] [b.type.name/] [b.name/] [/for]){
+	}
+	[elseif (o.name ='addGw' )]
+		[o.visibility/] static FogDevice [o.name/]([for (b : Parameter | o.ownedParameter)separator(',')] [b.type.name/] [b.name/] [/for]){
+	}
+
+	[elseif (o.name = 'addMobile')]
+		[o.visibility/] static FogDevice [o.name/]([for (b : Parameter | o.ownedParameter)separator(',')] [b.type.name/] [b.name/] [/for]){
+	}
+	[elseif (o.name = 'createFogDevice')]
+		[o.visibility/] static FogDevice [o.name/]([for (b : Parameter | o.ownedParameter)separator(',')] [b.type.name/] [b.name/] [/for]){
+	}
+	[/if]      
+  [/for]
+	[for (stereo: Stereotype | aClass.getAppliedStereotypes())]
+		[for (op : Operation | stereo.ownedOperation) separator('\n')]
+     		[op.visibility/] void [op.name/]([for (b : Parameter | op.ownedParameter)separator(',')] [b.type.name/] [b.name/] [/for]){
+      		}  
+		[/for]
+	[/for]
+	}
+
+
+	
+[/for]
+[/template]
+
+[template public generateHealthSystemVariables (aClass: Class)]
+
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+package org.fog.test.perfeval; 
+ 
+import java.util.ArrayList; 
+import java.util.Calendar; 
+import java.util.LinkedList; 
+import java.util.List; 
+ 
+import org.cloudbus.cloudsim.Host; 
+import org.cloudbus.cloudsim.Log; 
+import org.cloudbus.cloudsim.Pe; 
+import org.cloudbus.cloudsim.Storage; 
+import org.cloudbus.cloudsim.core.CloudSim; 
+import org.cloudbus.cloudsim.power.PowerHost; 
+import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple; 
+import org.cloudbus.cloudsim.sdn.overbooking.BwProvisionerOverbooking; 
+import org.cloudbus.cloudsim.sdn.overbooking.PeProvisionerOverbooking; 
+import org.fog.application.AppEdge; 
+import org.fog.application.AppLoop; 
+import org.fog.application.Application; 
+import org.fog.application.selectivity.FractionalSelectivity; 
+import org.fog.entities.Actuator; 
+import org.fog.entities.FogBroker; 
+import org.fog.entities.FogDevice; 
+import org.fog.entities.FogDeviceCharacteristics; 
+import org.fog.entities.Sensor; 
+import org.fog.entities.Tuple; 
+import org.fog.placement.Controller; 
+import org.fog.placement.ModuleMapping; 
+import org.fog.placement.ModulePlacementEdgewards; 
+import org.fog.placement.ModulePlacementMapping; 
+import org.fog.policy.AppModuleAllocationPolicy; 
+import org.fog.scheduler.StreamOperatorScheduler; 
+import org.fog.utils.FogLinearPowerModel; 
+import org.fog.utils.FogUtils; 
+import org.fog.utils.TimeKeeper; 
+import org.fog.utils.distribution.DeterministicDistribution; 
+ 
+/** 
+ * Simulation setup for case study - Intelligent Surveillance 
+ */ 
+
+public class [aClass.name/] {
+
+[for (prop: Property |aClass.ownedAttribute) ]
+	static List<[prop.type.name/]> [prop.name/] = new ArrayList<[prop.name/]>();
+	  		[/for]
+[for (stereo: Stereotype | aClass.getAppliedStereotypes())]
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator('\n')]
+		 static int [att.name/]  =  [if att.type.name = 'String']"[aClass.getValue(stereo, att.name)/]";
+									[else][aClass.getValue(stereo, att.name)/];
+									[/if]
+	[/for]
+[/for]
+private static boolean CLOUD = false;
+
+public static void [for (op: Operation| aClass.ownedOperation->select(m: Operation | m.isStatic))][op.name/]([for (p : Parameter | op.getParametersOfDirectionKind(ParameterDirectionKind::_in)) separator(',')][p.name/] [if (p.type.name <> 'Unit')][p.type.name/][/if][/for]) [/for]
+{
+[/file]	
+[/template]
+
+[template public InitializeCloudsimEntities (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+[for (stereo: Stereotype | aClass.getAppliedStereotypes())]
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator('\n')]
+		 [att.type.name/] [att.name/]  =  [if att.type.name = 'String']"[aClass.getValue(stereo, att.name)/]";
+									[else][aClass.getValue(stereo, att.name)/];
+									[/if][/for][/for]
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Calender'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)]
+
+[if op.name='getInstance']
+[cls.name/] calender = [cls.name/].[op.name/]();
+[/if][/for][/for]
+
+[for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('init')))]
+[aClass.name/].[op.name/](
+[/for][for (stereo: Stereotype | aClass.getAppliedStereotypes())][for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_')))] [att.name/],[/for]calender[/for]);
+[/file]
+[/template]
+
+[template public InitializeModuleMapping (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+[aClass.name/] moduleMaping = 
+[aClass.name/].[for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('createModuleMapping')))][op.name/][/for]();
+
+ if(CLOUD){ 
+moduleMapping.[for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('addModuleToDevice')))][op.name/][/for]("connecter", "cloud);
+moduleMapping.[for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('addModuleToDevice')))][op.name/][/for]("concentartion_calculator","cloud");
+for(FogDevice device : fogDevices){ 
+    if(device.getName().startsWith("m")){
+
+moduleMapping.[for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('addModuleToDevice')))][op.name/][/for]("patient",
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('SimEntity'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)][if op.name='getName'][op.name/]()[/if][/for][/for]);
+
+ } 
+      }
+ } else{
+    moduleMapping.[for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('addModuleToDevice')))][op.name/][/for]("connecter","cloud");
+[/file]
+[/template]
+
+[template public createTimeKeeper (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+[aClass.name/].[for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('getInstance')))][op.name/][/for]().[for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('setSimulationStartTime')))][op.name/][/for]
+
+(
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Calender'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)]
+[if op.name='getInstance'][cls.name/].[op.name/]().[/if][if op.name='getTimeInMillis'][op.name/]()[/if][/for][/for]);
+
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('CloudSim'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)]
+[if op.name='startSimulation'][cls.name/].[op.name/]();[/if]
+[if op.name='stopSimulation'][cls.name/].[op.name/]();[/if]
+[/for][/for]
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Log'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)]
+[if op.name='printLine'][cls.name/].[op.name/]("Simulation finished!");
+
+ } catch (Exception e) { 
+      e.printStackTrace(); [/if]
+
+[if op.name='printLine'][cls.name/].[op.name/]("Unwanted errors happen")}};[/if]
+[/for][/for]
+[/file]
+[/template]
+
+[template public generatelog (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+[for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('printLine')))][aClass.name/].[op.name/]("Starting Simulation...");[/for]
+try{
+[for (op: Operation| aClass.ownedOperation->select(m: Operation |m.name.startsWith('disable')))][aClass.name/].[op.name/]();[/for]
+[/file]
+[/template]
+
+[template public createApplicationID (aClass : Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+[for (stereo: Stereotype | aClass.getAppliedStereotypes())]
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator('\n')]
+		[att.type.name/] [att.name/]  =  [if att.type.name = 'String']"[aClass.getValue(stereo, att.name)/]";
+									[else][aClass.getValue(stereo, att.name)/];
+									[/if][/for][/for]
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('FogBroker'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)]
+[if op.name='FogBroker']
+[cls.name/] broker = new [op.name/]("broker");
+[/if][/for][/for]
+
+[aClass.name/] application = [for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('createApplication')))][op.name/]([/for]
+[for (stereo: Stereotype | aClass.getAppliedStereotypes())][for (att: Property | stereo.attribute->select(p:Property |  p.name.startsWith('appId'))) separator('\n')]
+ [att.name/],[/for][/for]broker.
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('SimEntity'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)][if op.name='getId'][op.name/]()[/if][/for][/for]);
+
+[aClass.name/].[for (op: Operation| aClass.ownedOperation->select(m: Operation | m.name.startsWith('setUserId')))][op.name/][/for](broker.
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('SimEntity'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)][if op.name='getId'][op.name/]()[/if][/for][/for]);
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('eHealthSystem'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)][if op.name='createFogDevices'][op.name/](broker.[/if][/for][/for]
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('SimEntity'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)][if op.name='getId'][op.name/](),[/if][/for][/for]
+
+[for (stereo: Stereotype | aClass.getAppliedStereotypes())]
+	[for (att: Property | stereo.attribute->select(p:Property | p.name.startsWith('appId'))) separator('\n')]
+		 [att.name/][/for][/for])
+[/file]
+[/template]
+
+[template public controller (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+[aClass.name/] controller=null;
+
+controller.[for (op: Operation| aClass.ownedOperation)][op.name/][/for]((application, (CLOUD)?(new ModulePlacementMapping(fogDevices, application, moduleMapping)) :(new ModulePlacementEdgewards(fogDevices, sensors, actuators, application, moduleMapping)));
+[/file]
+[/template]
+
+[template public createFogDevices (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+private static void 
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('eHealthSystem'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)][if op.name='createFogDevices'][op.name/]
+
+([for (p : Parameter | op.getParametersOfDirectionKind(ParameterDirectionKind::_in)) separator(',')]
+[if (p.type.name <> 'integer')] [p.type.name/] [p.name/][/if][/for])
+[/if]
+[/for][/for]
+{
+[aClass.name/] [for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('cloud'))) ][cls.name/] = [/for]
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('eHealthSystem'))) separator('\n')]
+	[for (op: Operation| cls.ownedOperation)][if op.name='createFogDevice'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('cloud'))) ]
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if]
+	[/for]
+[/for]);
+
+[cls.name/].[/for]   				  
+[for (op: Operation| aClass.ownedOperation)][op.name/]();[/for]
+ fogDevices.add([for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('cloud'))) ][cls.name/][/for]);
+
+[aClass.name/]
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('proxy'))) ][cls.name/]=[/for]
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('eHealthSystem'))) separator('\n')]
+	[for (op: Operation| cls.ownedOperation)][if op.name='createFogDevice'][op.name/][/if][/for][/for](
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('proxy'))) ]
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+[if stereo.name= 'Entities']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[cls.name/].[/for]
+[for (op: Operation| aClass.ownedOperation)][op.name/][/for]
+([for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('cloud'))) ]
+[cls.name/][/for].
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('SimEntity'))) ]
+[for (op: Operation| cls.ownedOperation)][if op.name='getId'][op.name/][/if][/for][/for]);
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('proxy'))) ]
+[cls.name/].[for (op: Operation| cls.ownedOperation)][if op.name='setUplinkLatency'][op.name/]([/if][/for]
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+[if stereo.name ='Latency']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+ fogDevices.add(proxy); 
+    for(int i=0;i<numOfDepts;i++){ 
+      addGw(i+"", userId, appId, proxy.getId()); 
+    } 
+  } 
+
+private static [aClass.name/] 
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('eHealthSystem'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)][if op.name='addGw'][op.name/]
+
+([for (p : Parameter | op.getParametersOfDirectionKind(ParameterDirectionKind::_in)) separator(',')]
+[if (p.type.name <> 'Int')] [p.type.name/] [p.name/][/if][/for])
+[/if]
+[/for][/for]
+{
+[aClass.name/] [for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('router')))][cls.name/][/for] =
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('eHealthSystem'))) separator('\n')]
+	[for (op: Operation| cls.ownedOperation)][if op.name='createFogDevice'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('router'))) ]
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+[if stereo.name= 'Entities']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if]
+	[/for]
+[/if][/for]);
+
+[cls.name/].[/for]
+
+
+fogDevices.add([for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('router'))) ][cls.name/][/for]);
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('router'))) ]
+[cls.name/].[for (op: Operation| cls.ownedOperation)][if op.name='setUplinkLatency'][op.name/]([/if][/for]
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+[if stereo.name ='Latency']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+ for(int i=0;i<numOfMobilesPerDept;i++){ 
+      String mobileId = id+"-"+i; 
+
+[aClass.name/] [for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('mobile')))][cls.name/][/for] =
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('eHealthSystem'))) separator('\n')]
+	[for (op: Operation| cls.ownedOperation)][if op.name='createFogDevice'][op.name/][/if][/for][/for](
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('mobile'))) ]
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+[if stereo.name ='Entities']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[aClass.name/][/for]
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('eHealthSystem')))]
+[for (op: Operation| aClass.ownedOperation)]
+[if op.name='addMobile'][op.name/][/if][/for][/for](mobileId, userId, appId, [for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('router'))) ][cls.name/][/for]
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('SimEntity'))) ] [for (op: Operation| cls.ownedOperation)][if op.name='getId'].[op.name/]()[/if][/for][/for]);
+      
+fogDevices.add([for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('mobile'))) ][cls.name/][/for]);
+}
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('dept'))) ]
+[cls.name/].[for (op: Operation| cls.ownedOperation)][if op.name='setUplinkLatency'][op.name/]([/if][/for]
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+[if stereo.name ='Latency']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+
+[aClass.name/] [for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('dept')))][cls.name/].[/for]
+[for (op: Operation| aClass.ownedOperation)][op.name/][/for]();
+return [for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('dept')))][cls.name/][/for]
+}
+
+
+private static [aClass.name/] 
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('eHealthSystem'))) separator('\n')]
+[for (op: Operation| cls.ownedOperation)][if op.name='addMobile'][op.name/]
+
+([for (p : Parameter | op.getParametersOfDirectionKind(ParameterDirectionKind::_in)) separator(',')]
+[if (p.type.name <> 'Int')] [p.type.name/] [p.name/][/if][/for])
+[/if]
+[/for][/for]
+{
+[aClass.name/]  [for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('mobile')))][cls.name/] =
+
+[cls.name/][/for].[for (op: Operation| aClass.ownedOperation)][op.name/]()[/for]);
+
+Sensor eegSensor = new Sensor ("s-"+id, "EEG", userId, appId, 
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('DeterministicDistribution')))]
+[cls.name/] new (
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		[cls.getValue(stereo, att.name)/]	[/for][/for]));[/for]
+
+sensors.add(eegSensor);
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Actuator')))]
+[cls.name/] display = new [cls.name/] ("a-"+id, userId, appId, "DISPALY")[/for]
+
+actuators.add(display);
+ eegSensor.setGatewayDeviceId(mobile.getId()); 
+    eegSensor.setLatency(1.0); 
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Actuator'))) separator('\n')]
+display.[for (op: Operation| cls.ownedOperation)][if op.name='setGatewayDeviceId'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('mobile')))][cls.name/][/for].
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('SimEntity')))][for (op: Operation| cls.ownedOperation)][if op.name='getId'][op.name/]()[/if][/for][/for]);
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Actuator'))) separator('\n')]
+display.[for (op: Operation| cls.ownedOperation)][if op.name='setLatency'][op.name/][/if][/for][/for]();
+
+return [for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('mobile')))][cls.name/][/for]
+}
+
+private static [aClass.name/]
+
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('eHealthSystem')))]
+[for (op: Operation| cls.ownedOperation)][if op.name='createFogDevice'][op.name/](
+
+[for (p : Parameter | op.getParametersOfDirectionKind(ParameterDirectionKind::_in)) separator(',')]
+[if (p.type.name <> 'integer')] [p.type.name/] [p.name/][/if][/for]
+)
+[/if][/for][/for]
+
+{
+[/file]
+[/template]
+
+[template public createProcessingElement (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+ List <Pe> [for (prop: Property |aClass.ownedAttribute) ] [prop.name/] = new ArrayList<Pe>();
+[prop.name/].add(new Pe(0, new PeProvisionerOverbooking(mips))); [/for]
+[/file]
+[/template]
+
+[template public createHost (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+[for (stereo: Stereotype | aClass.getAppliedStereotypes())]
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator('\n')]
+			 [att.type.name/] [att.name/]  =  [if att.type.name = 'String']"[aClass.getValue(stereo, att.name)/]";
+									[else][aClass.getValue(stereo, att.name)/];
+									[/if]
+	[/for]
+[/for]
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('PowerHost')))]
+[cls.name/] host = new [cls.name/] (hostId,	new RamProvisionerSimple(ram),new BwProvisionerOverbooking(bw),
+				storage,peList,	new StreamOperatorScheduler(peList),new FogLinearPowerModel(busyPower, idlePower));
+[/for]
+
+List <[aClass.name/]> [for (prop: Property |aClass.ownedAttribute) ] [prop.name/] = new ArrayList<[aClass.name/]> ();
+[prop.name/][/for].add(host);
+[/file]
+[/template]
+
+[template public InitializeDeviceCharacteristics (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+[for (stereo: Stereotype | aClass.getAppliedStereotypes())]
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator('\n')]
+			 [att.type.name/] [att.name/]  =  [if att.type.name = 'String']"[aClass.getValue(stereo, att.name)/]";
+									[else][aClass.getValue(stereo, att.name)/];	[/if]
+	[/for]
+[/for]
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Storage')))]
+LinkedList<[cls.name/]> [for (p: Property| cls.ownedAttribute)][if p.name='storagelist'][p.name/][/if][/for]
+ = new LinkedList<[cls.name/]> ();
+
+[/for]
+
+
+Fog[aClass.name/] characteristics = new Fog[aClass.name/] (
+
+[for (stereo: Stereotype | aClass.getAppliedStereotypes())]
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator('\n')]
+			  [att.name/] ,	[/for][/for])
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('FogDevice')))]
+[cls.name/]  fogdevice = null; 
+ 
+ try { 
+   fogdevice = new [cls.name/](FogDevice(nodeName, characteristics,new AppModuleAllocationPolicy(hostList), storageList, 10,upBw, downBw, 0, ratePerMips); 
+ }
+
+catch (Exception e)
+ { 
+      e.printStackTrace();
+}
+fogdevice.setLevel(level);
+ return fogdevice; 
+  } 
+[/for]
+[/file]
+[/template]
+
+[template public createAppModule (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))]
+private static [cls.name/] [for (op: Operation| cls.ownedOperation)][if op.name='createApplication'] [op.name/]
+	  ([for (p : Parameter | op.getParametersOfDirectionKind(ParameterDirectionKind::_in)) separator(',')]
+	   [if (p.type.name <> 'integer')] [p.type.name/] [p.name/][/if][/for])
+	{
+[cls.name/] application = [cls.name/].[op.name/]
+ 		([for (p : Parameter | op.getParametersOfDirectionKind(ParameterDirectionKind::_in)) separator(',')]
+	     [if (p.type.name <> 'integer')] [p.name/][/if][/for]);[/if][/for]
+application. [for (op: Operation| cls.ownedOperation)][if op.name='addAppModule'][op.name/]([/if][/for]
+[/for]
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('patient'))) ]
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+[if stereo.name='Module']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"[else][cls.getValue(stereo, att.name)/][/if][/for][/if][/for][/for]);
+
+
+-----------------------------------
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application'))) ]
+application. [for (op: Operation| cls.ownedOperation)][if op.name='addAppModule'][op.name/]([/if][/for]
+[/for]
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('concentration_calculator'))) ]
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+[if stereo.name='Module']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"[else][cls.getValue(stereo, att.name)/][/if][/for][/if][/for][/for]);
+
+-----------------------------------
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application'))) ]
+application. [for (op: Operation| cls.ownedOperation)][if op.name='addAppModule'][op.name/]([/if][/for]
+[/for]
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('connector'))) ]
+[for (stereo: Stereotype | cls.getAppliedStereotypes())]
+[if stereo.name='Module']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"[else][cls.getValue(stereo, att.name)/][/if][/for][/if][/for][/for]);
+
+-----------------------------------
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application'))) ]
+application. [for (op: Operation| cls.ownedOperation)][if op.name='addAppModule'][op.name/]([/if][/for][/for]
+
+[for (interface: Interface| aClass.siblings(uml::Interface)->select(interface: Interface | interface.name.contains('user_interface')))]
+[for (stereo: Stereotype | interface.getAppliedStereotypes())]
+[if stereo.name ='Module']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) ]
+	    [if att.type.name = 'String']"[interface.getValue(stereo, att.name)/]"[else][interface.getValue(stereo, att.name)/][/if][/for][/if][/for]);
+
+[/for]
+[/file]
+[/template]
+
+[template public createAppEdge (aClass: Class)]
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for]
+if(EEG_TRANSMISSION_TIME==10)
+ application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))]
+[for (op: Operation| cls.ownedOperation)][if op.name='addAppEdge'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('mobile'))) ]
+  [for (stereo: Stereotype | cls.getAppliedStereotypes())]
+  [if stereo.name ='DataDistribution']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+else
+application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))]
+[for (op: Operation| cls.ownedOperation)][if op.name='addAppEdge'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('patient'))) ]
+  [for (stereo: Stereotype | cls.getAppliedStereotypes())]
+  [if stereo.name ='DataDistribution']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+ 
+application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))]
+[for (op: Operation| cls.ownedOperation)][if op.name='addAppEdge'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('connector'))) ]
+  [for (stereo: Stereotype | cls.getAppliedStereotypes())]
+  [if stereo.name ='DataDistribution']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+
+ 
+application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))][for (op: Operation| cls.ownedOperation)][if op.name='addAppEdge'][op.name/][/if][/for][/for](
+
+  [for (interface: Interface| aClass.siblings(uml::Interface)->select(interface: Interface | interface.name.contains('concentration_calculator')))]
+[for (stereo: Stereotype | interface.getAppliedStereotypes())]
+[if stereo.name ='DataDistribution']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[interface.getValue(stereo, att.name)/]"
+                                        [else][interface.getValue(stereo, att.name)/]
+          [/if]
+    [/for]
+[/if]
+[/for]
+   [/for]);
+
+ 
+application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))]
+[for (op: Operation| cls.ownedOperation)][if op.name='addAppEdge'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('mobile'))) ]
+  [for (stereo: Stereotype | cls.getAppliedStereotypes())]
+  [if stereo.name ='DataDistribution']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+
+application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))]
+[for (op: Operation| cls.ownedOperation)][if op.name='addAppEdge'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Actuator'))) ]
+  [for (stereo: Stereotype | cls.getAppliedStereotypes())]
+  [if stereo.name ='DataDistribution']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+[/file]
+[/template]
+
+[template public createTupleMapping(aClass : Class)]
+
+	application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))]
+[for (op: Operation| cls.ownedOperation)][if op.name='addTupleMapping'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('patient'))) ]
+  [for (stereo: Stereotype | cls.getAppliedStereotypes())]
+  [if stereo.name ='InputOutputModel']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+ 
+application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))]
+[for (op: Operation| cls.ownedOperation)][if op.name='addTupleMapping'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('connector'))) ]
+  [for (stereo: Stereotype | cls.getAppliedStereotypes())]
+  [if stereo.name ='InputOutputModel']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+
+ 
+application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))][for (op: Operation| cls.ownedOperation)][if op.name='addTupleMapping'][op.name/][/if][/for][/for](
+
+  [for (interface: Interface| aClass.siblings(uml::Interface)->select(interface: Interface | interface.name.contains('concentration_calculator')))]
+[for (stereo: Stereotype | interface.getAppliedStereotypes())]
+[if stereo.name ='InputOutputModel']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[interface.getValue(stereo, att.name)/]"
+                                        [else][interface.getValue(stereo, att.name)/]
+          [/if]
+    [/for]
+[/if]
+[/for]
+   [/for]);
+
+ 
+application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))]
+[for (op: Operation| cls.ownedOperation)][if op.name='addTupleMapping'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('mobile'))) ]
+  [for (stereo: Stereotype | cls.getAppliedStereotypes())]
+  [if stereo.name ='DataDistribution']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+
+application.[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application')))]
+[for (op: Operation| cls.ownedOperation)][if op.name='addAppEdge'][op.name/][/if][/for][/for](
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Actuator'))) ]
+  [for (stereo: Stereotype | cls.getAppliedStereotypes())]
+  [if stereo.name ='DataDistribution']
+	[for (att: Property | stereo.attribute->select(p:Property | not p.name.startsWith('base_'))) separator(',')]
+		  [if att.type.name = 'String']"[cls.getValue(stereo, att.name)/]"
+									[else][cls.getValue(stereo, att.name)/]
+									[/if][/for][/if][/for]);
+[/for]
+
+[/template]
+
+[template public createAppLoop (aClass: Class)]
+
+[file (aClass.name+'.java', false)]
+		public[if (aClass.isAbstract)] abstract[/if] class [aClass.name.toUpperFirst()/][for (superC : Class | aClass.superClass) before(' extends ') separator(' ,')] [superC.name/]
+     	[/for]{
+        	[for (interf : Interface | aClass.getImplementedInterfaces())
+          		before(' implements ')
+            	separator(' ,')]
+             	[interf.name/]
+       		[/for] 
+final [aClass.name/] loop1 = new [for (op: Operation| aClass.ownedOperation)][if op.name='AppLoop'][op.name/](new ArrayList<String>(){{add("EEG");add("patient");add("concentration_calculator");add("patient");add("DISPLAY");}}[/if][/for]
+ 
+List<[aClass.name/]> loops = new ArrayList<[aClass.name/]>(){{add(loop1);}};
+
+[for (cls: Class | aClass.siblings(uml::Class)->select(class:Class | class.name.contains('Application'))) ]
+
+application.[for (op: Operation| cls.ownedOperation)][if op.name='setLoops'] [op.name/][/if][/for] (loops);
+			
+[/for]
+
+return application;
+	}
+}
+[/file] 
+[/template]
+
+[query public hasStereotype( e : uml::Element, value: String) : Boolean = not e.getAppliedStereotypes() -> select (e: uml::Stereotype | e.name = value) -> isEmpty() /]
+[query public hasReturnType(op: Operation): Boolean = not op.ownedParameter->select(param: Parameter | param.direction = ParameterDirectionKind::return)->isEmpty() /]
+[query public hasParameterOfDirectionType(op: Operation, kind: ParameterDirectionKind): Boolean = not op.ownedParameter->select(param: Parameter | param.direction = kind)->isEmpty() /]
+[query public getAllProperties(e: uml::Class) : OrderedSet(Property) = (((e.getAppliedStereotypes().attribute)->union (e.getAllAttributes()))->select(p:Property | not p.name.startsWith('base_')))->asOrderedSet() /]
+[query public getOnlyLocalProperties(e: uml::Class) : OrderedSet(Property) = (((e.getAppliedStereotypes().attribute)->union (e.attribute))->select(p:Property | not p.name.startsWith('base_')))->asOrderedSet() /]
+[query public getParametersOfDirectionKind(op: Operation, kind: ParameterDirectionKind): Set(Parameter) =  (op.ownedParameter->select(param:Parameter | param.direction= kind)) /]
+[query public nodeName( n: Slot) : String = n.getValue(n.getAppliedStereotype('eHealthSystem::createFogDevice'), 'nodeName')/]
+

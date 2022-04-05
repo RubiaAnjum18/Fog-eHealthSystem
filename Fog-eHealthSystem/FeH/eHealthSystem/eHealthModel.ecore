@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    name="TH" nsURI="http:///TH.ecore" nsPrefix="TH">
+  <eClassifiers xmi:type="ecore:EClass" name="Patient">
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="Pat_ID" ordered="false"
+        lowerBound="1" eType="ecore:EDataType types.ecore#//Integer"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="Activity_type" ordered="false"
+        lowerBound="1" eType="#//Activity"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="device" ordered="false"
+        eType="#//Device"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EEnum" name="Activity">
+    <eLiterals xmi:type="ecore:EEnumLiteral" name="Walking"/>
+    <eLiterals xmi:type="ecore:EEnumLiteral" name="Relaxing" value="1"/>
+    <eLiterals xmi:type="ecore:EEnumLiteral" name="Working" value="2"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="Device">
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="dev_id" ordered="false"
+        lowerBound="1" eType="ecore:EDataType types.ecore#//Integer"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="processor" ordered="false"
+        lowerBound="1" eType="ecore:EDataType types.ecore#//String"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="storage_size" ordered="false"
+        lowerBound="1" eType="ecore:EDataType types.ecore#//String"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="storage" ordered="false"
+        eType="#//Storage"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="Storage">
+    <eOperations xmi:type="ecore:EOperation" name="add" ordered="false" lowerBound="1"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="Sensor">
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="name" ordered="false" lowerBound="1"
+        eType="ecore:EDataType types.ecore#//String"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="type" ordered="false" lowerBound="1"
+        eType="ecore:EDataType types.ecore#//Integer"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="device" ordered="false"
+        eType="#//Device"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="patient" ordered="false"
+        lowerBound="1" upperBound="-1" eType="#//Patient"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="Detector">
+    <eOperations xmi:type="ecore:EOperation" name="Detects" ordered="false" lowerBound="1"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="communicator" ordered="false"
+        eType="#//Communicator"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="sensor" ordered="false"
+        eType="#//Sensor"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="processing" ordered="false"
+        eType="#//Processing"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="Communicator">
+    <eOperations xmi:type="ecore:EOperation" name="Communicate" ordered="false" lowerBound="1"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="executor" ordered="false"
+        eType="#//Executor"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="Executor">
+    <eOperations xmi:type="ecore:EOperation" name="Execute" ordered="false" lowerBound="1"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="Processing">
+    <eOperations xmi:type="ecore:EOperation" name="analysis" ordered="false" lowerBound="1"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="Pat_ID" ordered="false"
+        lowerBound="1" eType="ecore:EDataType types.ecore#//Integer"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="data_type" ordered="false"
+        lowerBound="1" eType="ecore:EDataType types.ecore#//String"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="service_time" ordered="false"
+        lowerBound="1" eType="ecore:EDataType types.ecore#//String"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="storage" ordered="false"
+        eType="#//Storage"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="Scheduler">
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="time" ordered="false" lowerBound="1"
+        eType="ecore:EDataType types.ecore#//String"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="detector" ordered="false"
+        eType="#//Detector"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="communicator" ordered="false"
+        eType="#//Communicator"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="executor" ordered="false"
+        eType="#//Executor"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="storage" ordered="false"
+        eType="#//Storage"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="controller" ordered="false"
+        eType="#//Controller"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="Controller">
+    <eOperations xmi:type="ecore:EOperation" name="Control" ordered="false" lowerBound="1"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="performance" ordered="false"
+        eType="#//Performance"/>
+    <eStructuralFeatures xmi:type="ecore:EReference" name="executor" ordered="false"
+        eType="#//Executor"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="Performance">
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="latency" ordered="false"
+        lowerBound="1" eType="ecore:EDataType types.ecore#//String"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="bandwidth" ordered="false"
+        lowerBound="1" eType="ecore:EDataType types.ecore#//String"/>
+  </eClassifiers>
+  <eClassifiers xmi:type="ecore:EClass" name="EEG" eSuperTypes="#//Sensor">
+    <eStructuralFeatures xmi:type="ecore:EAttribute" name="electric_signal" ordered="false"
+        lowerBound="1" eType="ecore:EDataType types.ecore#//String"/>
+  </eClassifiers>
+  <eSubpackages xmi:type="ecore:EPackage" name="Package40" nsURI="http:///TH/Package40.ecore"
+      nsPrefix="TH.Package40">
+    <eClassifiers xmi:type="ecore:EClass" name="Glucose"/>
+    <eClassifiers xmi:type="ecore:EClass" name="Glucometer">
+      <eStructuralFeatures xmi:type="ecore:EReference" name="glucose" ordered="false"
+          eType="#//Package40/Glucose"/>
+    </eClassifiers>
+  </eSubpackages>
+</ecore:EPackage>

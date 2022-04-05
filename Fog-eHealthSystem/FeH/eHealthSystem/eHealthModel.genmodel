@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:genmodel="http://www.eclipse.org/uml2/2.2.0/GenModel" xmlns:genmodel_1="http://www.eclipse.org/emf/2002/GenModel"
+    modelDirectory="/TH/src" modelPluginID="TH" modelName="TH" rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container"
+    importerID="org.eclipse.uml2.uml.ecore.importer" complianceLevel="8.0" copyrightFields="false"
+    operationReflection="true" importOrganizing="true">
+  <genAnnotations xmi:type="genmodel_1:GenAnnotation" source="http://www.eclipse.org/emf/2002/GenModel/importer/org.eclipse.uml2.uml.ecore.importer">
+    <details xmi:type="ecore:EStringToStringMapEntry" key="OPPOSITE_ROLE_NAMES" value="IGNORE"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="DUPLICATE_FEATURES" value="PROCESS"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="ANNOTATION_DETAILS" value="PROCESS"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="PROPERTY_DEFAULT_EXPRESSIONS"
+        value="IGNORE"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="DUPLICATE_FEATURE_INHERITANCE"
+        value="PROCESS"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="COMMENTS" value="PROCESS"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="DERIVED_FEATURES" value="PROCESS"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="SUPER_CLASS_ORDER" value="PROCESS"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="DUPLICATE_OPERATION_INHERITANCE"
+        value="DISCARD"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="REDEFINING_OPERATIONS"
+        value="REPORT"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="INVARIANT_CONSTRAINTS"
+        value="PROCESS"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="UNION_PROPERTIES" value="REPORT"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="DUPLICATE_OPERATIONS" value="PROCESS"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="NON_API_INVARIANTS" value="IGNORE"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="CAMEL_CASE_NAMES" value="IGNORE"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="SUBSETTING_PROPERTIES"
+        value="REPORT"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="OPERATION_BODIES" value="IGNORE"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="ECORE_TAGGED_VALUES" value="PROCESS"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="UNTYPED_PROPERTIES" value="REPORT"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="REDEFINING_PROPERTIES"
+        value="REPORT"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="INVOCATION_DELEGATES" value="IGNORE"/>
+    <details xmi:type="ecore:EStringToStringMapEntry" key="VALIDATION_DELEGATES" value="IGNORE"/>
+  </genAnnotations>
+  <foreignModel>TH.uml</foreignModel>
+  <genPackages xmi:type="genmodel:GenPackage" prefix="TH" disposableProviderFactory="true"
+      ecorePackage="ecore:EPackage eHealthModel.ecore#/">
+    <genEnums xmi:type="genmodel:GenEnum" typeSafeEnumCompatible="false" ecoreEnum="ecore:EEnum eHealthModel.ecore#//Activity">
+      <genEnumLiterals xmi:type="genmodel:GenEnumLiteral" ecoreEnumLiteral="ecore:EEnumLiteral eHealthModel.ecore#//Activity/Walking"/>
+      <genEnumLiterals xmi:type="genmodel:GenEnumLiteral" ecoreEnumLiteral="ecore:EEnumLiteral eHealthModel.ecore#//Activity/Relaxing"/>
+      <genEnumLiterals xmi:type="genmodel:GenEnumLiteral" ecoreEnumLiteral="ecore:EEnumLiteral eHealthModel.ecore#//Activity/Working"/>
+    </genEnums>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Patient">
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Patient/Pat_ID"/>
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Patient/Activity_type"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Patient/device"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Device">
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Device/dev_id"/>
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Device/processor"/>
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Device/storage_size"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Device/storage"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Storage">
+      <genOperations xmi:type="genmodel:GenOperation" ecoreOperation="ecore:EOperation eHealthModel.ecore#//Storage/add"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Sensor">
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Sensor/name"/>
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Sensor/type"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Sensor/device"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Sensor/patient"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Detector">
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Detector/communicator"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Detector/sensor"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Detector/processing"/>
+      <genOperations xmi:type="genmodel:GenOperation" ecoreOperation="ecore:EOperation eHealthModel.ecore#//Detector/Detects"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Communicator">
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Communicator/executor"/>
+      <genOperations xmi:type="genmodel:GenOperation" ecoreOperation="ecore:EOperation eHealthModel.ecore#//Communicator/Communicate"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Executor">
+      <genOperations xmi:type="genmodel:GenOperation" ecoreOperation="ecore:EOperation eHealthModel.ecore#//Executor/Execute"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Processing">
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Processing/Pat_ID"/>
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Processing/data_type"/>
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Processing/service_time"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Processing/storage"/>
+      <genOperations xmi:type="genmodel:GenOperation" ecoreOperation="ecore:EOperation eHealthModel.ecore#//Processing/analysis"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Scheduler">
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Scheduler/time"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Scheduler/detector"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Scheduler/communicator"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Scheduler/executor"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Scheduler/storage"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Scheduler/controller"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Controller">
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Controller/performance"/>
+      <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Controller/executor"/>
+      <genOperations xmi:type="genmodel:GenOperation" ecoreOperation="ecore:EOperation eHealthModel.ecore#//Controller/Control"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Performance">
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Performance/latency"/>
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//Performance/bandwidth"/>
+    </genClasses>
+    <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//EEG">
+      <genFeatures xmi:type="genmodel:GenFeature" createChild="false" ecoreFeature="ecore:EAttribute eHealthModel.ecore#//EEG/electric_signal"/>
+    </genClasses>
+    <nestedGenPackages xmi:type="genmodel:GenPackage" prefix="Package40" disposableProviderFactory="true"
+        ecorePackage="ecore:EPackage eHealthModel.ecore#//Package40">
+      <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Package40/Glucose"/>
+      <genClasses xmi:type="genmodel:GenClass" ecoreClass="ecore:EClass eHealthModel.ecore#//Package40/Glucometer">
+        <genFeatures xmi:type="genmodel:GenFeature" notify="false" createChild="false"
+            propertySortChoices="true" ecoreFeature="ecore:EReference eHealthModel.ecore#//Package40/Glucometer/glucose"/>
+      </genClasses>
+    </nestedGenPackages>
+  </genPackages>
+  <genPackages xmi:type="genmodel:GenPackage" prefix="Types" basePackage="org.eclipse.uml2"
+      disposableProviderFactory="true" ecorePackage="ecore:EPackage types.ecore#/">
+    <genDataTypes xmi:type="genmodel:GenDataType" ecoreDataType="ecore:EDataType types.ecore#//Boolean"/>
+    <genDataTypes xmi:type="genmodel:GenDataType" ecoreDataType="ecore:EDataType types.ecore#//Real"/>
+    <genDataTypes xmi:type="genmodel:GenDataType" ecoreDataType="ecore:EDataType types.ecore#//String"/>
+    <genDataTypes xmi:type="genmodel:GenDataType" ecoreDataType="ecore:EDataType types.ecore#//UnlimitedNatural"/>
+    <genDataTypes xmi:type="genmodel:GenDataType" ecoreDataType="ecore:EDataType types.ecore#//Integer"/>
+  </genPackages>
+</genmodel:GenModel>
